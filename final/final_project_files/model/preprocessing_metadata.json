@@ -1,0 +1,57 @@
+{
+  "study_area": {
+    "name": "2025 Los Angeles Palisades Fire",
+    "bbox_wgs84": [
+      -118.717856,
+      33.998365,
+      -118.466523,
+      34.139426
+    ],
+    "crs": "EPSG:32611",
+    "resolution_meters": 20
+  },
+  "temporal_windows": {
+    "pre_fire": {
+      "start": "2024-12-01",
+      "end": "2025-01-06"
+    },
+    "post_fire": {
+      "start": "2025-02-01",
+      "end": "2025-02-28"
+    }
+  },
+  "sentinel_scenes": {
+    "pre_fire": "S2B_11SLT_20241218_0_L2A",
+    "post_fire": "S2C_11SLT_20250221_0_L2A"
+  },
+  "tensor_info": {
+    "shape": [
+      801,
+      1173,
+      4
+    ],
+    "channels": [
+      "dNBR",
+      "Post-Fire SWIR",
+      "DEM Aspect",
+      "Building Footprints"
+    ],
+    "dtype": "float64"
+  },
+  "target_info": {
+    "shape": [
+      801,
+      1173
+    ],
+    "otsu_threshold": 0.33256225357959057,
+    "positive_class_pixels": 135985,
+    "negative_class_pixels": 803588
+  },
+  "data_sources": {
+    "optical": "Sentinel-2 L2A via Element 84 Earth Search STAC",
+    "dem": "USGS 3DEP via Planetary Computer STAC",
+    "fire_perimeter": "NIFC / LA County Open Data",
+    "buildings": "LA GeoHub Building Footprints",
+    "damage_inspection": "CAL FIRE DINS"
+  }
+}
