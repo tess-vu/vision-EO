@@ -44,8 +44,13 @@
       1173
     ],
     "otsu_threshold": 0.33256225357959057,
-    "positive_class_pixels": 135985,
-    "negative_class_pixels": 803588
+    "positive_class_pixels": 140978,
+    "negative_class_pixels": 798595
+  },
+  "label_construction": {
+    "method": "point_based_dins_buffering",
+    "buffer_radius_meters": 15,
+    "rationale": "Labels derived from DINS points, not building footprints, to maintain feature-label independence"
   },
   "data_sources": {
     "optical": "Sentinel-2 L2A via Element 84 Earth Search STAC",
