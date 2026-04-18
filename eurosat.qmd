@@ -17,10 +17,6 @@ EuroSAT is a benchmark dataset of 27,000 labeled Sentinel-2 satellite image patc
 
 ## Notebook
 
-```{python}
-#| echo: false
-#| output: false
-# Notebook rendered below
-```
+[View full notebook on nbviewer →](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/eurosat/eurosat.ipynb){.btn .btn-primary}
 
-{{< embed eurosat/eurosat.ipynb echo=true >}}
+[View on GitHub →](https://github.com/tess-vu/vision-EO/blob/main/eurosat/eurosat.ipynb){.btn .btn-outline-primary}

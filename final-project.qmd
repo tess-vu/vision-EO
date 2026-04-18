@@ -113,15 +113,16 @@ A U-Net encoder–decoder with skip connections captures both fine-grained pixel
 
 ## Notebooks
 
-### Data Preprocessing
+::: {.callout-note}
+The notebooks are best viewed interactively via the links below.
+:::
 
-{{< embed final/01_data_preprocessing.ipynb echo=true >}}
+| Notebook | Description |
+|----------|-------------|
+| [01 — Data Preprocessing](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/final/01_data_preprocessing.ipynb) | STAC data access, dNBR computation, DEM aspect, building footprint rasterization |
+| [02 — Modeling & Results](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/final/02_modeling_approach.ipynb) | Random Forest baseline, U-Net training, k-fold evaluation, final metrics |
 
----
-
-### Modeling & Results
-
-{{< embed final/02_modeling_approach.ipynb echo=true >}}
+[View all notebooks on GitHub →](https://github.com/tess-vu/vision-EO/tree/main/final){.btn .btn-outline-primary}
 
 ---
 
