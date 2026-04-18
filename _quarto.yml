@@ -1,0 +1,34 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Vision × Earth Observation"
+  description: "Remote sensing and machine learning on aerial imagery — EuroSAT classification and wildfire damage prediction."
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: eurosat.qmd
+        text: EuroSAT
+      - href: final-project.qmd
+        text: Palisades Fire
+    right:
+      - icon: github
+        href: https://github.com/tess-vu/vision-EO
+        aria-label: GitHub
+
+  page-footer:
+    center: "Tess Vu · Luciano Lu · Ming Cao &nbsp;|&nbsp; UCLA 2025"
+
+format:
+  html:
+    theme:
+      light: flatly
+      dark: darkly
+    highlight-style: github
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    code-tools: true
+    smooth-scroll: true

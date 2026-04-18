@@ -1,0 +1,26 @@
+---
+title: "EuroSAT Land Cover Classification"
+subtitle: "Supervised & unsupervised ML on multispectral Sentinel-2 imagery"
+author: "Tess Vu · Luciano Lu · Ming Cao"
+date: "2025"
+---
+
+## Overview
+
+EuroSAT is a benchmark dataset of 27,000 labeled Sentinel-2 satellite image patches covering 10 land-use/land-cover classes across Europe. This project applies both classical machine learning and deep convolutional neural networks to classify land cover from multispectral imagery.
+
+**Classes:** Annual Crop · Forest · Herbaceous Vegetation · Highway · Industrial · Pasture · Permanent Crop · Residential · River · Sea/Lake
+
+**Data source:** [EuroSAT dataset](https://github.com/phelber/EuroSAT) — Sentinel-2 multispectral (13 bands, 64×64 px patches)
+
+---
+
+## Notebook
+
+```{python}
+#| echo: false
+#| output: false
+# Notebook rendered below
+```
+
+{{< embed eurosat/eurosat.ipynb echo=true >}}
