@@ -22,15 +22,6 @@ jobs:
         with:
           lfs: true
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install Python dependencies
-        run: |
-          pip install jupyter nbformat nbconvert
-
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 

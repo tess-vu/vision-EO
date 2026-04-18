@@ -25,8 +25,6 @@ toc: false
 
 ### [EuroSAT Land Cover Classification](eurosat.qmd)
 
-![](final/final_project_files/images/preprocessing_visualization.png){.img-fluid style="border-radius:8px; margin-bottom:1rem;"}
-
 Supervised and unsupervised classification of multispectral Sentinel-2 imagery across 10 land-use categories using the EuroSAT benchmark dataset. Implemented CNNs and compared against traditional ML baselines.
 
 [View Project →](eurosat.qmd){.btn .btn-primary}
