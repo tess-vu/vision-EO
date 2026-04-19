@@ -11,7 +11,7 @@ toc: false
 
 **Remote Sensing · Deep Learning · Cloud-Native Geospatial**
 
-*Tess Vu · Luciano Lu · Ming Cao — UPenn 2025*
+*Tess Vu · Luciano Lu · Ming Cao — UPenn 2026*
 
 :::
 
@@ -24,6 +24,8 @@ toc: false
 ::: {.g-col-12 .g-col-md-6}
 
 ### [EuroSAT Land Cover Classification](eurosat.qmd)
+
+![](eurosat/eurosat_pic.png){.img-fluid style="border-radius:8px; margin-bottom:1rem;"}
 
 Supervised and unsupervised classification of multispectral Sentinel-2 imagery across 10 land-use categories using the EuroSAT benchmark dataset. Implemented CNNs and compared against traditional ML baselines.
 
