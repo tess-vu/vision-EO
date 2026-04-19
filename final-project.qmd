@@ -2,7 +2,7 @@
 title: "2025 LA Palisades Fire — Structural Damage Prediction"
 subtitle: "Topographically-aware U-Net semantic segmentation from satellite imagery"
 author: "Tess Vu · Luciano Lu · Ming Cao"
-date: "2026"
+date: "April 19, 2026"
 ---
 
 ## Overview

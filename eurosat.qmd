@@ -2,7 +2,7 @@
 title: "EuroSAT Land Cover Classification"
 subtitle: "Supervised & unsupervised ML on multispectral Sentinel-2 imagery"
 author: "Tess Vu · Luciano Lu · Ming Cao"
-date: "2026"
+date: "April 19, 2026"
 ---
 
 ## Overview
