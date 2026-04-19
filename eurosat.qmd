@@ -2,16 +2,72 @@
 title: "EuroSAT Land Cover Classification"
 subtitle: "Supervised & unsupervised ML on multispectral Sentinel-2 imagery"
 author: "Tess Vu · Luciano Lu · Ming Cao"
-date: "2025"
+date: "2026"
 ---
 
 ## Overview
 
-EuroSAT is a benchmark dataset of 27,000 labeled Sentinel-2 satellite image patches covering 10 land-use/land-cover classes across Europe. This project applies both classical machine learning and deep convolutional neural networks to classify land cover from multispectral imagery.
+EuroSAT is a benchmark dataset of Sentinel-2 satellite image patches covering **10 land-use/land-cover classes** across Europe. This project applies classical machine learning and deep convolutional neural networks to classify land cover from both RGB and multispectral imagery.
 
 **Classes:** Annual Crop · Forest · Herbaceous Vegetation · Highway · Industrial · Pasture · Permanent Crop · Residential · River · Sea/Lake
 
-**Data source:** [EuroSAT dataset](https://github.com/phelber/EuroSAT) — Sentinel-2 multispectral (13 bands, 64×64 px patches)
+![](eurosat/eurosat_pic.png){.img-fluid style="border-radius:8px;"}
+
+---
+
+## 1. Data Loading & Exploration
+
+- Loaded EuroSAT RGB patches (64×64 px) into NumPy arrays
+- Explored class distribution and visualized one example per class
+- Applied data augmentation before train/test split
+- Created grayscale versions for traditional ML experiments
+
+---
+
+## 2. Traditional Machine Learning
+
+Experiments restricted to **Forest, Residential, and Industrial** classes.
+
+| Model | Approach |
+|-------|----------|
+| Binary SVMs | Three one-vs-one classifiers: Forest vs Residential, Forest vs Industrial, Residential vs Industrial |
+| Multiclass SVM | Majority vote from the three binary classifiers |
+| Random Forest | 300 estimators, all-CPU parallel, full multiclass |
+
+---
+
+## 3. Deep Learning
+
+### 3.1 Fully Connected Networks (Grayscale)
+
+Four architectures compared on flattened grayscale inputs:
+
+| Model | Architecture |
+|-------|-------------|
+| Model 1 | Single-layer (input → softmax) |
+| Model 2 | Two-layer NN |
+| Model 3 | Four-layer NN with dropout |
+| Ensemble | Probability averaging of Models 1–3 |
+
+### 3.2 CNNs & Transfer Learning (RGB)
+
+- **Model 4** — Custom CNN on RGB patches
+- **Model 5** — MobileNetV2 transfer learning on RGB
+
+Analyzed top confusion pairs and visualized misclassified examples.
+
+### 3.3 Multispectral Transfer Learning
+
+Extended the best RGB approach to full multispectral Sentinel-2 channels (>3 bands) using transfer learning adapted for multi-channel input.
+
+---
+
+## 4. Key Takeaways
+
+- Transfer learning (MobileNetV2) outperformed custom CNNs on RGB data
+- Spatial context from CNNs provided major gains over flattened grayscale inputs
+- Multispectral channels carry additional discriminative signal beyond RGB
+- Data augmentation before splitting helped generalization across all models
 
 ---
 
