@@ -28,15 +28,29 @@
     "shape": [
       801,
       1173,
-      4
+      8
     ],
     "channels": [
       "dNBR",
       "Post-Fire SWIR",
       "DEM Aspect",
-      "Building Footprints"
+      "Building Footprints",
+      "Pre-Fire NIR",
+      "Pre-Fire SWIR",
+      "Post-Fire NIR",
+      "Post-Fire SWIR"
     ],
     "dtype": "float64"
+  },
+  "multi_temporal_bands": {
+    "bands": [
+      "pre_nir",
+      "pre_swir",
+      "post_nir",
+      "post_swir"
+    ],
+    "normalization": "2nd_98th_percentile",
+    "rationale": "Raw bands allow U-Net to learn spectral change representations beyond hand-engineered dNBR"
   },
   "target_info": {
     "shape": [
@@ -44,13 +58,15 @@
       1173
     ],
     "otsu_threshold": 0.33256225357959057,
-    "positive_class_pixels": 140978,
-    "negative_class_pixels": 798595
+    "positive_class_pixels": 10111,
+    "label_source": "DINS_only",
+    "negative_class_pixels": 929462,
+    "leaking_union_saved_separately": true
   },
   "label_construction": {
-    "method": "point_based_dins_buffering",
+    "method": "dins_only_point_based_buffering",
     "buffer_radius_meters": 15,
-    "rationale": "Labels derived from DINS points, not building footprints, to maintain feature-label independence"
+    "rationale": "Labels derived exclusively from DINS points. dNBR is NOT used in label generation to prevent target leakage since dNBR is Channel 0 of the input tensor."
   },
   "data_sources": {
     "optical": "Sentinel-2 L2A via Element 84 Earth Search STAC",
