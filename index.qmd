@@ -11,7 +11,7 @@ toc: false
 
 **Remote Sensing · Deep Learning · Cloud-Native Geospatial**
 
-*Tess Vu · Luciano Lu · Ming Cao — UCLA 2025*
+*Tess Vu · Luciano Lu · Ming Cao — UPenn 2025*
 
 :::
 
