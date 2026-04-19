@@ -117,12 +117,21 @@ A U-Net encoder–decoder with skip connections captures both fine-grained pixel
 
 ![Model comparison — Random Forest vs U-Net k-fold](final/final_project_files/images/model_comparison_kfold.png)
 
-| Model | F1 (Dice) | IoU |
-|-------|-----------|-----|
-| Random Forest (baseline) | — | — |
-| Topographically-Aware U-Net | — | — |
+| Model | F1 (mean ± std) | IoU (mean ± std) |
+|-------|-----------------|------------------|
+| Random Forest (baseline) | 0.3175 ± 0.1101 | 0.1939 ± 0.0793 |
+| Topographically-Aware U-Net | **0.5090 ± 0.0622** | **0.3437 ± 0.0556** |
 
-> Full per-fold metrics in the notebook.
+The U-Net improves F1 by **+0.19** and IoU by **+0.15** over the Random Forest baseline, confirming that spatial context meaningfully improves structural damage prediction.
+
+### Random Forest Feature Importance
+
+| Feature | Importance (mean ± std) |
+|---------|------------------------|
+| dNBR | 0.458 ± 0.013 |
+| Post-Fire SWIR | 0.258 ± 0.014 |
+| Building Footprints | 0.171 ± 0.008 |
+| DEM Aspect | 0.113 ± 0.008 |
 
 ---
 
