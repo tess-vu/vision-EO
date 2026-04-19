@@ -2,7 +2,7 @@
 title: "2025 LA Palisades Fire — Structural Damage Prediction"
 subtitle: "Topographically-aware U-Net semantic segmentation from satellite imagery"
 author: "Tess Vu · Luciano Lu · Ming Cao"
-date: "2025"
+date: "2026"
 ---
 
 ## Overview
@@ -15,15 +15,15 @@ The January 2025 Los Angeles Palisades Fire burned through steep chaparral canyo
 
 ## Problem & Motivation
 
-Civic agencies currently wait for labor-intensive field inspections before allocating rebuilding resources, estimating insurance liabilities, or deploying soil stabilization teams. A pixel-level damage prediction map from satellite imagery would provide **immediate, actionable intelligence** for post-disaster zoning and debris removal prioritization.
+Civic agencies currently wait for labor-intensive field inspections before allocating rebuilding resources, estimating insurance liabilities, or deploying soil stabilization teams. A pixel-level damage prediction map from satellite imagery provides **immediate, actionable intelligence** for post-disaster zoning and debris removal prioritization.
 
 ### Key Technical Challenges
 
-**1. Topographic shadowing** — In January, the sun sits low in the southern sky. Steep north-facing canyons cast deep shadows that produce near-zero reflectance across all optical bands, mimicking severe burn signatures. Feeding DEM-derived aspect explicitly into the model allows the network to distinguish shadow artifacts from genuine burns.
+**1. Topographic shadowing** — In January, the sun sits low in the southern sky. Steep north-facing canyons cast deep shadows that mimic severe burn spectral signatures. DEM-derived aspect is fed explicitly into the model to distinguish shadow artifacts from genuine burns.
 
-**2. Class imbalance** — Destroyed buildings represent ~2–5% of fire perimeter pixels. The model uses combined Dice Loss + Focal Loss to handle this.
+**2. Class imbalance** — Destroyed buildings represent ~2–5% of fire perimeter pixels. Combined Dice Loss + Focal Loss addresses this.
 
-**3. Target leakage prevention** — dNBR is used as an *input feature*, not a label source. Ground truth comes exclusively from [CAL FIRE DINS](https://gis.data.cnra.ca.gov/datasets/CALFIRE-Forestry::cal-fire-damage-inspection-dins-data) field inspections, ensuring the model learns predictive relationships rather than circular spectral thresholds.
+**3. Target leakage prevention** — dNBR is an *input feature*, not a label source. Ground truth comes exclusively from [CAL FIRE DINS](https://gis.data.cnra.ca.gov/datasets/CALFIRE-Forestry::cal-fire-damage-inspection-dins-data) field inspections, ensuring the model learns predictive relationships rather than circular spectral thresholds.
 
 ---
 
@@ -31,7 +31,7 @@ Civic agencies currently wait for labor-intensive field inspections before alloc
 
 ![Palisades Fire study area boundary](final/final_project_files/images/palisades_study_area.png)
 
-![Fire perimeter and damage zones](final/final_project_files/images/dins_damage_zones.png)
+![Fire perimeter and DINS damage zones](final/final_project_files/images/dins_damage_zones.png)
 
 ---
 
@@ -48,11 +48,13 @@ Civic agencies currently wait for labor-intensive field inspections before alloc
 
 ### Preprocessing
 
-![Preprocessing visualization — band composites and index calculation](final/final_project_files/images/preprocessing_visualization.png)
+![dNBR pre/post fire comparison](final/final_project_files/images/dnbr_comparison.png)
 
-![dNBR comparison pre/post fire](final/final_project_files/images/dnbr_comparison.png)
+![NBR pre/post fire comparison](final/final_project_files/images/nbr_comparison.png)
 
-![dNBR histogram distribution](final/final_project_files/images/dnbr_histogram.png)
+![dNBR distribution histogram](final/final_project_files/images/dnbr_histogram.png)
+
+![Full preprocessing visualization](final/final_project_files/images/preprocessing_visualization.png)
 
 ---
 
@@ -74,53 +76,78 @@ The input tensor is a 4-channel stack per pixel:
 
 $$\mathbf{X} = [\text{dNBR},\ \text{Post-Fire SWIR},\ \text{DEM Aspect},\ \text{Building Footprints}]$$
 
-### Baseline: Random Forest
+### Spatial K-Fold Cross-Validation
 
-A pixel-wise Random Forest classifier treats each pixel independently, establishing a performance floor. Because it ignores spatial context between neighboring pixels, the U-Net should exceed it if spatial relationships matter for damage prediction.
+Traditional random splits allow spatially adjacent pixels to appear in both train and test sets, causing **spatial autocorrelation leakage** — the model trivially interpolates between neighbors rather than learning genuine predictive signal.
 
-### Primary: Topographically-Aware U-Net
-
-A U-Net encoder–decoder with skip connections captures both fine-grained pixel features and broad spatial context. By explicitly feeding topographic aspect alongside spectral bands and building footprints, the model learns that high dNBR on a north-facing slope *with* a building footprint signals structural damage, while the same spectral signature *without* a building may indicate shadow.
-
-**Training details:**
-- Loss: Dice Loss + Focal Loss (handles class imbalance)
-- Positive-class oversampling in patch selection
-- Spatial block cross-validation (64×64 px blocks) — prevents spatial autocorrelation leakage
-- Split: 70% train / 15% validation / 15% test
-
-### Spatial K-Fold Distribution
+The solution: divide the AOI into **64×64 pixel spatial blocks**, assign each block to a fold, and stratify by damage presence so each fold sees a representative proportion of the minority class.
 
 ![Spatial k-fold block distribution](final/final_project_files/images/spatial_kfold_distribution.png)
 
 ---
 
-## Results
+### Baseline: Random Forest
 
-### Metrics (positive damage class only)
+A pixel-wise Random Forest classifier treats each pixel independently using the 4-channel feature tensor, without considering spatial context between neighbors. This establishes a lower bound: if the U-Net can't beat Random Forest, spatial context adds no value.
 
-| Model | IoU | F1 / Dice |
-|-------|-----|-----------|
-| Random Forest | — | — |
-| U-Net (topographic) | — | — |
-
-> Results shown in notebooks below.
+**Training:** 5-fold spatial cross-validation · Evaluated on F1-Score (positive damage class only)
 
 ![Random Forest k-fold results](final/final_project_files/images/rf_kfold_results.png)
 
-![Model comparison — k-fold](final/final_project_files/images/model_comparison_kfold.png)
+---
+
+### Primary: Topographically-Aware U-Net
+
+A U-Net encoder–decoder with skip connections captures both fine-grained pixel features and broad spatial context. The model learns that high dNBR on a north-facing slope *with* a building footprint signals structural damage, while the same spectral signature *without* a building may indicate shadow.
+
+**Architecture:** Input `(64, 64, 4)` → Encoder (Conv + BatchNorm + ReLU blocks) → Bottleneck → Decoder with skip connections → Binary output mask
+
+**Loss functions:**
+- **Dice Loss** — directly optimizes F1-Score for the minority damage class
+- **Focal Loss** — down-weights easy background pixels, focuses learning on hard positives
+- **Combined Loss** — weighted sum of both
+
+**Metrics:** Dice Coefficient · IoU (Jaccard Index)
+
+**Training:** 5-fold spatial CV · Positive-class patch oversampling · Split 70/15/15
+
+---
+
+## Results
+
+![Model comparison — Random Forest vs U-Net k-fold](final/final_project_files/images/model_comparison_kfold.png)
+
+| Model | F1 (Dice) | IoU |
+|-------|-----------|-----|
+| Random Forest (baseline) | — | — |
+| Topographically-Aware U-Net | — | — |
+
+> Full per-fold metrics in the notebook.
+
+---
+
+## Discussion & Limitations
+
+The U-Net's ability to leverage spatial context between neighboring pixels is the core hypothesis. Results assess whether spectral + topographic + footprint features carry genuine predictive signal for independently-assessed structural damage — a relationship that may or may not exist at Sentinel-2's 20m resolution.
+
+**Limitations:**
+- Sentinel-2's 20m resolution may be too coarse to resolve individual structures
+- DINS point labels introduce GPS drift uncertainty (~15m buffer applied)
+- Cloud cover during the post-fire window constrained image availability
+- Severe class imbalance (~2–5% positive pixels) makes evaluation sensitive to threshold choice
 
 ---
 
 ## Notebooks
 
 ::: {.callout-note}
-The notebooks are best viewed interactively via the links below.
+Notebooks are best viewed via the links below.
 :::
 
 | Notebook | Description |
 |----------|-------------|
-| [01 — Data Preprocessing](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/final/01_data_preprocessing.ipynb) | STAC data access, dNBR computation, DEM aspect, building footprint rasterization |
-| [02 — Modeling & Results](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/final/02_modeling_approach.ipynb) | Random Forest baseline, U-Net training, k-fold evaluation, final metrics |
+| [01 — Data Preprocessing](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/final/01_data_preprocessing.ipynb) | STAC data access, dNBR computation, DEM aspect, building footprint rasterization, target mask generation |
+| [02 — Modeling & Results](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/final/02_modeling_approach.ipynb) | Spatial k-fold CV, Random Forest baseline, U-Net architecture, training loop, model comparison |
 
 [View all notebooks on GitHub →](https://github.com/tess-vu/vision-EO/tree/main/final){.btn .btn-outline-primary}
 
