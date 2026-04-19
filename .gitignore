@@ -13,3 +13,7 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# Data
+final/eaton_test_files/data
+final/final_project_files/data
