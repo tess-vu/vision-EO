@@ -153,12 +153,12 @@ The U-Net's ability to leverage spatial context between neighboring pixels is th
 Notebooks are best viewed via the links below.
 :::
 
-| Notebook | Description |
-|----------|-------------|
-| [01 — Data Preprocessing](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/final/01_data_preprocessing.ipynb) | STAC data access, dNBR computation, DEM aspect, building footprint rasterization, target mask generation |
-| [02 — Modeling & Results](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/final/02_modeling_approach.ipynb) | Spatial k-fold CV, Random Forest baseline, U-Net architecture, training loop, model comparison |
+| Notebook | Open in |
+|----------|---------|
+| **01 — Data Preprocessing** — STAC data access, dNBR computation, DEM aspect, building footprint rasterization, target mask generation | [↓ Download from GitHub](https://github.com/tess-vu/vision-EO/raw/main/final/01_data_preprocessing.ipynb) |
+| **02 — Modeling & Results** — Spatial k-fold CV, Random Forest baseline, U-Net architecture, training loop, model comparison | [Open in Colab](https://colab.research.google.com/github/tess-vu/vision-EO/blob/main/final/02_modeling_approach.ipynb) · [nbviewer](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/final/02_modeling_approach.ipynb) |
 
-[View all notebooks on GitHub →](https://github.com/tess-vu/vision-EO/tree/main/final){.btn .btn-outline-primary}
+[View on GitHub →](https://github.com/tess-vu/vision-EO/tree/main/final){.btn .btn-outline-primary}
 
 ---
 

@@ -73,6 +73,6 @@ Extended the best RGB approach to full multispectral Sentinel-2 channels (>3 ban
 
 ## Notebook
 
-[View full notebook on nbviewer →](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/eurosat/eurosat.ipynb){.btn .btn-primary}
+[Open in Colab →](https://colab.research.google.com/github/tess-vu/vision-EO/blob/main/eurosat/eurosat.ipynb){.btn .btn-primary}
 
-[View on GitHub →](https://github.com/tess-vu/vision-EO/blob/main/eurosat/eurosat.ipynb){.btn .btn-outline-primary}
+[View on nbviewer →](https://nbviewer.org/github/tess-vu/vision-EO/blob/main/eurosat/eurosat.ipynb){.btn .btn-outline-primary}
