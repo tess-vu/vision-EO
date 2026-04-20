@@ -1,78 +1,53 @@
 {
-  "study_area": {
-    "name": "2025 Los Angeles Palisades Fire",
-    "bbox_wgs84": [
-      -118.717856,
-      33.998365,
-      -118.466523,
-      34.139426
-    ],
-    "crs": "EPSG:32611",
-    "resolution_meters": 20
-  },
-  "temporal_windows": {
-    "pre_fire": {
-      "start": "2024-12-01",
-      "end": "2025-01-06"
+  "fires": [
+    {
+      "name": "Palisades",
+      "X_tensor_file": "X_tensor_palisades.npy",
+      "y_target_file": "y_target_palisades.npy",
+      "aoi_mask_file": "aoi_mask_palisades.npy",
+      "X_shape": [
+        801,
+        1173,
+        7
+      ],
+      "y_shape": [
+        801,
+        1173
+      ],
+      "damaged_pixels": 10111,
+      "aoi_pixels": 243261
     },
-    "post_fire": {
-      "start": "2025-02-01",
-      "end": "2025-02-28"
+    {
+      "name": "Eaton",
+      "X_tensor_file": "X_tensor_eaton.npy",
+      "y_target_file": "y_target_eaton.npy",
+      "aoi_mask_file": "aoi_mask_eaton.npy",
+      "X_shape": [
+        465,
+        778,
+        7
+      ],
+      "y_shape": [
+        465,
+        778
+      ],
+      "damaged_pixels": 12287,
+      "aoi_pixels": 142110
     }
-  },
-  "sentinel_scenes": {
-    "pre_fire": "S2B_11SLT_20241218_0_L2A",
-    "post_fire": "S2C_11SLT_20250221_0_L2A"
-  },
-  "tensor_info": {
-    "shape": [
-      801,
-      1173,
-      8
-    ],
-    "channels": [
-      "dNBR",
-      "Post-Fire SWIR",
-      "DEM Aspect",
-      "Building Footprints",
-      "Pre-Fire NIR",
-      "Pre-Fire SWIR",
-      "Post-Fire NIR",
-      "Post-Fire SWIR"
-    ],
-    "dtype": "float64"
-  },
-  "multi_temporal_bands": {
-    "bands": [
-      "pre_nir",
-      "pre_swir",
-      "post_nir",
-      "post_swir"
-    ],
-    "normalization": "2nd_98th_percentile",
-    "rationale": "Raw bands allow U-Net to learn spectral change representations beyond hand-engineered dNBR"
-  },
-  "target_info": {
-    "shape": [
-      801,
-      1173
-    ],
-    "otsu_threshold": 0.33256225357959057,
-    "positive_class_pixels": 10111,
-    "label_source": "DINS_only",
-    "negative_class_pixels": 929462,
-    "leaking_union_saved_separately": true
-  },
-  "label_construction": {
-    "method": "dins_only_point_based_buffering",
-    "buffer_radius_meters": 15,
-    "rationale": "Labels derived exclusively from DINS points. dNBR is NOT used in label generation to prevent target leakage since dNBR is Channel 0 of the input tensor."
-  },
-  "data_sources": {
-    "optical": "Sentinel-2 L2A via Element 84 Earth Search STAC",
-    "dem": "USGS 3DEP via Planetary Computer STAC",
-    "fire_perimeter": "NIFC / LA County Open Data",
-    "buildings": "LA GeoHub Building Footprints",
-    "damage_inspection": "CAL FIRE DINS"
-  }
+  ],
+  "channel_names": [
+    "dNBR",
+    "DEM Aspect",
+    "Building Footprints",
+    "Pre-Fire NIR",
+    "Pre-Fire SWIR",
+    "Post-Fire NIR",
+    "Post-Fire SWIR"
+  ],
+  "n_channels": 7,
+  "target_crs": "EPSG:32611",
+  "target_resolution": 20,
+  "pre_fire_window": "2024-12-01 to 2025-01-06",
+  "post_fire_window": "2025-02-01 to 2025-02-28",
+  "random_seed": 42
 }
