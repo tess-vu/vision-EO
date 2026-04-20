@@ -31,7 +31,7 @@ Civic agencies currently wait for labor-intensive field inspections before alloc
 
 ## Study Area
 
-Both fires occurred during the same weather event in January 2025, share the same data sources and temporal windows, and were processed using the same pipeline.
+Both fires occurred during the same January 2025 weather event and were processed through an identical pipeline. Using two geographically distinct fires — Palisades in the coastal Santa Monica Mountains, Eaton in the inland San Gabriel foothills — exposes the model to different topographic conditions and nearly doubles training data compared to a single-fire setup.
 
 | Fire | Location | AOI Pixels | Damaged Pixels | Damage % |
 |------|----------|-----------|---------------|----------|
@@ -60,17 +60,23 @@ Both fires occurred during the same weather event in January 2025, share the sam
 
 ### Preprocessing
 
-Sentinel-2 scenes are selected by lowest cloud cover per date group, cloud-masked using the Scene Classification Layer (SCL), and mosaicked across tile boundaries (Eaton straddles two tiles).
+Sentinel-2 L2A is used because atmospheric correction is required when comparing imagery across two dates — without it, atmospheric variation mimics spectral change. Scenes are ranked by cloud cover and the lowest-cloud acquisition is selected per fire; where a fire straddles two tiles (Eaton), all tiles from the best date are mosaicked. Pixels are cloud-masked using the SCL layer before any spectral computation.
+
+The pre-fire window closes one day before ignition; the post-fire window starts February 1 to allow active fire and smoke to clear.
 
 ![Pre-fire vs post-fire NBR — both fires](final/eaton_test_files/images/nbr_pre_vs_post.png)
 
 ![dNBR with fire perimeter overlay](final/eaton_test_files/images/dnbr_with_aoi.png)
+
+Aspect is chosen over elevation or slope because it determines solar illumination angle: north-facing slopes in Southern California both retain more moisture and are most likely to be in shadow during January acquisitions, so aspect is the variable most confounded with burn severity at this location and season.
 
 ![DEM aspect — both fires](final/eaton_test_files/images/dem_aspect.png)
 
 ---
 
 ## Building Footprints & Labels
+
+Building footprints are included as an **input feature**, not as labels — they tell the model *where structures exist*, enabling it to distinguish a high-dNBR building pixel from a high-dNBR chaparral pixel. DINS inspection records are used as ground truth because they are independent of the spectral inputs, which is the necessary condition to avoid target leakage. DINS points are buffered by 15 m to account for GPS drift in field conditions before rasterization.
 
 ![Building footprints and DINS damage points — both fires](final/eaton_test_files/images/rasterized_layers.png)
 
@@ -84,7 +90,7 @@ The input tensor is a **7-channel** stack per pixel:
 
 $$\mathbf{X} = [\text{dNBR},\ \text{DEM Aspect},\ \text{Building Footprints},\ \text{Pre-NIR},\ \text{Pre-SWIR},\ \text{Post-NIR},\ \text{Post-SWIR}]$$
 
-Adding raw pre- and post-fire NIR/SWIR bands alongside dNBR gives the model direct access to absolute reflectance values, not just the derived index.
+Raw pre- and post-fire NIR/SWIR bands are included alongside dNBR because dNBR encodes only the *relative change* between dates, discarding absolute reflectance context. Including the underlying bands lets the model learn that a given dNBR value means different things over bare soil versus dense forest.
 
 ![7-channel feature tensor — Palisades](final/eaton_test_files/images/tensor_channels_palisades.png)
 
@@ -92,9 +98,7 @@ Adding raw pre- and post-fire NIR/SWIR bands alongside dNBR gives the model dire
 
 ### Spatial K-Fold Cross-Validation
 
-Traditional random splits allow spatially adjacent pixels to appear in both train and test sets, causing **spatial autocorrelation leakage** — the model trivially interpolates between neighbors rather than learning genuine predictive signal.
-
-The solution: divide each fire's AOI into **64×64 pixel spatial blocks** with globally unique IDs, assign each block to a fold, and stratify by damage presence so each fold sees a representative proportion of the minority class.
+Fire damage clusters spatially — entire blocks burn together. A random pixel-level split would place test pixels immediately adjacent to training pixels, producing inflated metrics via spatial interpolation rather than genuine generalization. Spatial K-Fold assigns whole **64×64 pixel blocks** to folds, ensuring train and test regions are geographically separated. Blocks are stratified by damage presence because most blocks contain no damage at all — without stratification, some folds would have almost no positive labels.
 
 ![Spatial fold assignments — both fires](final/eaton_test_files/images/fold_assignments.png)
 
@@ -104,7 +108,7 @@ The solution: divide each fire's AOI into **64×64 pixel spatial blocks** with g
 
 ### Baseline: Random Forest
 
-A pixel-wise Random Forest classifier treats each pixel independently using the 7-channel feature tensor, without considering spatial context between neighbors. This establishes a lower bound: if the U-Net can't beat Random Forest, spatial context adds no value.
+A pixel-wise Random Forest treats each pixel independently and establishes a lower bound: if the U-Net cannot beat it, spatial context adds no value. `class_weight="balanced"` is required because an unweighted classifier maximizes accuracy by predicting "no damage" everywhere, achieving 94% accuracy with zero recall on the damage class.
 
 **Training:** 5-fold spatial cross-validation · `class_weight="balanced"` · Evaluated on F1-Score (positive damage class only)
 
@@ -114,18 +118,18 @@ A pixel-wise Random Forest classifier treats each pixel independently using the 
 
 ### Primary: Topographically-Aware U-Net
 
-A U-Net encoder–decoder with skip connections captures both fine-grained pixel features and broad spatial context. The model learns that high dNBR on a north-facing slope *with* a building footprint signals structural damage, while the same spectral signature *without* a building may indicate shadow.
+The U-Net encoder–decoder learns that a damaged pixel appears in a cluster with high dNBR, a building footprint, and a specific aspect — a spatial pattern the pixel-independent Random Forest cannot represent. Skip connections preserve fine structural boundaries that would otherwise be lost during downsampling.
 
 **Architecture:** Input `(64, 64, 7)` → 3-level Encoder (Conv + BatchNorm + ReLU) → Bottleneck → Decoder with skip connections → Binary sigmoid output
 
-**Regularization:** Standard Dropout + `SpatialDropout2D` (drops entire feature maps, stronger regularizer for spatial data)
+**Regularization:** `SpatialDropout2D` drops entire feature maps rather than individual activations. For convolutional layers, adjacent activations are highly correlated, so standard Dropout has little effect; dropping whole channels forces the network to learn redundant representations across channels. This was the primary fix for the overfitting observed in the earlier single-fire model.
 
-**Data augmentation:** Random horizontal/vertical flips + random 90° rotations applied during training (nadir imagery has no canonical orientation)
+**Data augmentation:** Random horizontal/vertical flips and 90° rotations are valid for nadir satellite imagery, which has no canonical orientation. Discrete 90° steps are used to avoid interpolation artifacts in the label masks.
 
 **Loss functions:**
-- **Dice Loss** — directly optimizes F1-Score for the minority damage class
-- **Focal Loss** (`alpha=0.80`, `gamma=3.0`) — down-weights easy background pixels, focuses learning on hard positives
-- **Combined Loss** — equal-weight sum of both
+- **Dice Loss** — optimizes overlap directly; prevents the model from collapsing to predicting all-negative at 5.8% prevalence
+- **Focal Loss** (`alpha=0.80`, `gamma=3.0`) — `alpha` upweights the positive class; higher `gamma` than default applies stronger down-weighting to easy background pixels
+- **Combined Loss** — Dice operates at the patch level (global shape), Focal at the pixel level (local precision); combining both provides complementary supervision
 
 **Training details:** Batch size 16 · Max 50 epochs · Early stopping patience 10 · `ReduceLROnPlateau` patience 5 · Positive-class patch 2× oversampling
 
@@ -142,7 +146,9 @@ A U-Net encoder–decoder with skip connections captures both fine-grained pixel
 | Random Forest (baseline) | 0.4101 ± 0.0810 | 0.2611 ± 0.0629 |
 | Topographically-Aware U-Net | **0.6532 ± 0.0469** | **0.4868 ± 0.0520** |
 
-The U-Net improves F1 by **+0.24** and IoU by **+0.23** over the Random Forest baseline. The model has confirmed predictive signal (F1 ≥ 0.50) but has not yet reached the operational utility threshold (F1 ≥ 0.70).
+The U-Net improves F1 by **+0.24** and IoU by **+0.23** over the Random Forest baseline. The lower standard deviation (0.047 vs. 0.081) indicates more consistent generalization across folds. The model has confirmed predictive signal (F1 ≥ 0.50) but has not yet reached the operational utility threshold (F1 ≥ 0.70).
+
+F1 is the primary metric because accuracy is dominated by the 94% majority (undamaged) class — a model predicting "no damage" everywhere would score 94% accuracy while detecting nothing. F1 measures precision and recall on the damage class only.
 
 ### Random Forest Feature Importance
 
@@ -151,16 +157,18 @@ The U-Net improves F1 by **+0.24** and IoU by **+0.23** over the Random Forest b
 | Post-Fire SWIR | 0.2609 ± 0.0096 |
 | dNBR | 0.2089 ± 0.0082 |
 | Building Footprints | 0.1603 ± 0.0161 |
-| Post-Fire NIR | 0.1063 ± 0.0037 |
 | DEM Aspect | 0.1215 ± 0.0144 |
+| Post-Fire NIR | 0.1063 ± 0.0037 |
 | Pre-Fire SWIR | 0.0797 ± 0.0032 |
 | Pre-Fire NIR | 0.0624 ± 0.0020 |
+
+Post-fire SWIR ranking above dNBR is consistent with the literature: burned soil and ash have characteristically high SWIR reflectance, and the raw band captures this without the normalization that compresses dNBR's dynamic range.
 
 ---
 
 ## Discussion & Limitations
 
-The expanded dataset (two fires, 7 channels, stronger regularization) substantially reduced overfitting compared to the single-fire baseline while also improving generalization performance. The U-Net's ability to leverage spatial context between neighboring pixels is the core hypothesis.
+The expanded dataset (two fires, 7 channels, stronger regularization) substantially reduced overfitting compared to the single-fire baseline while also improving generalization performance. The U-Net's +0.24 F1 gain over the pixel-independent Random Forest supports the hypothesis that spatial context is meaningful for this task.
 
 **Limitations:**
 - Sentinel-2's 20m resolution may be too coarse to resolve individual structures
