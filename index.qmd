@@ -35,9 +35,9 @@ Supervised and unsupervised classification of multispectral Sentinel-2 imagery a
 
 ::: {.g-col-12 .g-col-md-6}
 
-### [2025 LA Palisades Fire Damage Prediction](final-project.qmd)
+### [2025 LA Eaton and Palisades Fire Damage Prediction](final-project.qmd)
 
-![](final/final_project_files/images/palisades_study_area.png){.img-fluid style="border-radius:8px; margin-bottom:1rem;"}
+![](final/eaton_test_files/images/palisades_study_area.png){.img-fluid style="border-radius:8px; margin-bottom:1rem;"}
 
 Topographically-aware U-Net semantic segmentation to predict structural damage from the January 2025 Palisades wildfire using Sentinel-2 imagery, DEM aspect, and CAL FIRE DINS field assessments as ground truth.
 

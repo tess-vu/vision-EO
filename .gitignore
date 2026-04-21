@@ -10,10 +10,19 @@ __pycache__/
 
 # Jupyter
 .ipynb_checkpoints/
+eurosat/.ipynb_checkpoints/
+final/.ipynb_checkpoints/
 
 # macOS
 .DS_Store
 
 # Data
-final/eaton_test_files/data
-final/final_project_files/data
+eurosat/data/
+final/eaton_test_files/data/
+final/final_project_files/data/
+final/archive/final_project_files/data/
+
+# Cache
+.ruff_cache/
+eurosat/.ruff_cache/
+final/.ruff_cache/
